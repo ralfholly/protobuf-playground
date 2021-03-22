@@ -7,4 +7,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 
-add_subdirectory(test)
+add_subdirectory(src)
