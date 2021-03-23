@@ -1,7 +1,7 @@
 syntax = "proto3";
 package protobuftest;
 
-option java_package = "com.example.protobuftest";
+option optimize_for = LITE_RUNTIME;
 
 message CurrentDateTimeMessage {
   string title = 1;

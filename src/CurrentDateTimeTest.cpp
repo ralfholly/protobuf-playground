@@ -5,18 +5,36 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <thread>
 
 using namespace std;
 using namespace protobuftest;
 using namespace google::protobuf::util;
 
+#define TIMEIT(code) timeit([&]() { code; })
+
+inline double steadyClockDelta(std::chrono::time_point<std::chrono::steady_clock> start, std::chrono::time_point<std::chrono::steady_clock> end)
+{
+    using steady_clock = std::chrono::steady_clock;
+    return (end - start).count() * steady_clock::period::num / static_cast<double>(steady_clock::period::den);
+}
+
+inline double timeit(const std::function<void()>& lambda) {
+    using steady_clock = std::chrono::steady_clock;
+    auto start = steady_clock::now();
+    lambda();
+    auto end = steady_clock::now();
+    return steadyClockDelta(start, end);
+}
+
 void buildMessage(CurrentDateTimeMessage* msg) {
+    volatile static int m_year = 2000;
     msg->set_title("A simple test");
     msg->set_counter(42);
     CurrentDateTimeMessage::Date* date = msg->mutable_date();
     date->set_day(11);
     date->set_month(9);
-    date->set_year(2001);
+    date->set_year(m_year++);
     date->set_weekday("Monday");
     CurrentDateTimeMessage::Time* time = msg->mutable_time();
     time->set_hours(1);
@@ -76,6 +94,16 @@ int main(int argc, char* argv[]) {
     } else {
         cerr << "Failed to load message!" << endl;
     }
+
+    constexpr size_t reps = 10'000'000;
+    double runtime = TIMEIT(
+        for (size_t i = 0; i < reps; ++i) {
+            CurrentDateTimeMessage msg;
+            buildMessage(&msg);
+        }
+    );
+    cout << "Runtime: " << runtime << endl;
+    cout << "Average message build time: " << 1'000'000 * runtime / reps << " usec" << endl;
 
     return 0;
 }
