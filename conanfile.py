@@ -10,7 +10,10 @@ class ProtobufPlayground(ConanFile):
         self.requires("protobuf/3.15.5")
 
     def configure(self):
-        pass
+        self.options["protobuf" ].with_zlib = False
+        self.options["protobuf" ].with_rtti = False
+        self.options["protobuf" ].lite = True
+        self.options["protobuf" ].shared = False
 
     def build(self):
         cmake = CMake(self)
